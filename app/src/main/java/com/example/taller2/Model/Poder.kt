@@ -8,8 +8,8 @@ enum class Poder(
     val descripcion: String,
     val limiteUsosInicial: Int = 1
 ) {
-    COMODIN("Comodín", "Permite colocar una ficha sin cumplir uno de los extremos"),
-    SALTO("Salto", "El siguiente jugador pierde su turno"),
-    INTERCAMBIO("Intercambio", "Permite intercambiar una ficha propia con una del oponente"),
-    INVERSION("Inversión", "Cambia el sentido de los turnos")
+    COMODIN("Comodín", "Permite colocar una ficha sin cumplir uno de los extremos."),
+    SALTO("Salto", "El siguiente jugador pierde su turno."),
+    INTERCAMBIO("Intercambio", "Permite intercambiar una ficha propia con una del oponente."),
+    INVERSION("Inversión", "Cambia el sentido de los turnos.")
 }
