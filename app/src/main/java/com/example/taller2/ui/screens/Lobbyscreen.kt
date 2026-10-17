@@ -10,12 +10,13 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun Lobbyscreen(
-    onNavigateToGame: () -> Unit
+    onNavigateToGame: () -> Unit,
+    onCerrarSesion: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -24,7 +25,9 @@ fun Lobbyscreen(
 
         Button(
             onClick = { onNavigateToGame() },
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
         ) {
             Text("Nueva Partida")
         }
@@ -32,10 +35,27 @@ fun Lobbyscreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedButton(
-            onClick = { /* Aquí irá la lógica para ingresar un código de sala */ },
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            onClick = { },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
         ) {
             Text("Unirse a partida")
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Botón de cerrar sesión
+        Button(
+            onClick = { onCerrarSesion() },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.error
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Text("Cerrar Sesión")
         }
     }
 }

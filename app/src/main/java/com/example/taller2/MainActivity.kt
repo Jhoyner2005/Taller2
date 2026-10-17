@@ -7,6 +7,8 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -27,15 +29,17 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Controlador de navegación de Jetpack Compose
                     val navController = rememberNavController()
+                    val estaAutenticado by authViewModel.isAuthenticated.collectAsState()
 
-                    NavHost(navController = navController, startDestination = "login") {
+                    // Determinar la pantalla inicial dependiendo de si hay sesión activa
+                    val destinoInicial = if (estaAutenticado) "lobby" else "login"
+
+                    NavHost(navController = navController, startDestination = destinoInicial) {
                         composable("login") {
                             Loginscreen(
                                 authViewModel = authViewModel,
                                 onLoginSuccess = {
-                                    // Navega al lobby y evita que el usuario vuelva al login presionando "Atrás"
                                     navController.navigate("lobby") {
                                         popUpTo("login") { inclusive = true }
                                     }
@@ -45,7 +49,13 @@ class MainActivity : ComponentActivity() {
                         composable("lobby") {
                             Lobbyscreen(
                                 onNavigateToGame = {
-                                    // Más adelante, aquí añadirás la navegación hacia GameScreen
+                                    // Más adelante se agregará la pantalla del juego
+                                },
+                                onCerrarSesion = {
+                                    authViewModel.cerrarSesion()
+                                    navController.navigate("login") {
+                                        popUpTo("lobby") { inclusive = true }
+                                    }
                                 }
                             )
                         }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "806881783906",
+    "project_id": "tallerdomino-2b2f6",
+    "storage_bucket": "tallerdomino-2b2f6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:806881783906:android:8449b30b276b053686a13b",
+        "android_client_info": {
+          "package_name": "com.example.taller2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCq7SL-LDFMS3YPEkhMnfY4InFiwDAgc9E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
