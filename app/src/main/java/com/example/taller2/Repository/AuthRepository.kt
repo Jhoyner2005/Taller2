@@ -15,7 +15,7 @@ class AuthRepository {
         }
     }
 
-    // Retorna el usuario actualmente autenticado o null si no hay ninguno.
+    // Retorna el usuario actualmente autenticado o null si no hay ninguno
     fun obtenerUsuarioActual(): FirebaseUser? {
         return obtenerAuth()?.currentUser
     }
