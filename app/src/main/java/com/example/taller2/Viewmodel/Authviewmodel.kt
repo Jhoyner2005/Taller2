@@ -1,3 +1,4 @@
+
 package com.example.taller2.Viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -10,26 +11,21 @@ class Authviewmodel : ViewModel() {
 
     private val repository = AuthRepository()
 
-    // Estado para saber si el usuario está autenticado
     private val _isAuthenticated = MutableStateFlow(false)
     val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
 
-    // Estado para saber si se está procesando (cargando)
     private val _cargando = MutableStateFlow(false)
     val cargando: StateFlow<Boolean> = _cargando.asStateFlow()
 
-    // Estado para mostrar mensajes de error en la UI
     private val _mensajeError = MutableStateFlow<String?>(null)
     val mensajeError: StateFlow<String?> = _mensajeError.asStateFlow()
 
     init {
-        // Verificar si ya hay un usuario logueado al iniciar la app
-        if (repository.obtenerUsuarioActual() != null) {
-            _isAuthenticated.value = true
-        }
+        _isAuthenticated.value =
+            repository.obtenerUsuarioActual() != null
     }
 
-    // Iniciar sesión con email y contraseña
+    // Iniciar sesión
     fun login(email: String, contrasena: String) {
         if (email.isBlank() || contrasena.isBlank()) {
             _mensajeError.value = "Por favor completa todos los campos."
@@ -40,8 +36,8 @@ class Authviewmodel : ViewModel() {
         _mensajeError.value = null
 
         repository.iniciarSesion(
-            email = email,
-            clave = contrasena,
+            email,
+            contrasena,
             onExito = {
                 _cargando.value = false
                 _isAuthenticated.value = true
@@ -53,7 +49,7 @@ class Authviewmodel : ViewModel() {
         )
     }
 
-    // Registrar un nuevo usuario con email y contraseña
+    // Registrar usuario
     fun registrar(email: String, contrasena: String) {
         if (email.isBlank() || contrasena.isBlank()) {
             _mensajeError.value = "Por favor completa todos los campos."
@@ -61,7 +57,8 @@ class Authviewmodel : ViewModel() {
         }
 
         if (contrasena.length < 6) {
-            _mensajeError.value = "La contraseña debe tener al menos 6 caracteres."
+            _mensajeError.value =
+                "La contraseña debe tener al menos 6 caracteres."
             return
         }
 
@@ -69,8 +66,8 @@ class Authviewmodel : ViewModel() {
         _mensajeError.value = null
 
         repository.registrarUsuario(
-            email = email,
-            clave = contrasena,
+            email,
+            contrasena,
             onExito = {
                 _cargando.value = false
                 _isAuthenticated.value = true
@@ -82,12 +79,27 @@ class Authviewmodel : ViewModel() {
         )
     }
 
-    // Limpiar el mensaje de error de la pantalla
+    // Obtener el ID del usuario actual
+    fun getCurrentUserId(): String? {
+        return repository.obtenerUsuarioActual()?.uid
+    }
+
+    // Obtener el nombre del usuario actual
+    fun getCurrentUserName(): String {
+        val user = repository.obtenerUsuarioActual()
+
+        return user?.displayName
+            ?.takeIf { it.isNotBlank() }
+            ?: user?.email
+            ?: "Player"
+    }
+
+    // Limpiar mensaje de error
     fun limpiarError() {
         _mensajeError.value = null
     }
 
-    // Cerrar la sesión
+    // Cerrar sesión
     fun cerrarSesion() {
         repository.cerrarSesion()
         _isAuthenticated.value = false

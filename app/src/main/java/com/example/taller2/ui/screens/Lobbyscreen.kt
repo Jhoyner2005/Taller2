@@ -1,3 +1,4 @@
+
 package com.example.taller2.ui.screens
 
 import androidx.compose.foundation.layout.*
@@ -11,6 +12,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun Lobbyscreen(
     onNavigateToGame: () -> Unit,
+    onNavigateToJoin: () -> Unit,
     onCerrarSesion: () -> Unit
 ) {
     Column(
@@ -20,11 +22,15 @@ fun Lobbyscreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Menú Principal", fontSize = 28.sp)
+        Text(
+            text = "Menú Principal",
+            fontSize = 28.sp
+        )
+
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = { onNavigateToGame() },
+            onClick = onNavigateToGame,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
@@ -35,7 +41,7 @@ fun Lobbyscreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedButton(
-            onClick = { },
+            onClick = onNavigateToJoin,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
@@ -45,9 +51,8 @@ fun Lobbyscreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Botón de cerrar sesión
         Button(
-            onClick = { onCerrarSesion() },
+            onClick = onCerrarSesion,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.error
             ),

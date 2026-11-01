@@ -1,12 +1,13 @@
+
 package com.example.taller2.Repository
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
-// Repositorio encargado de gestionar la autenticación y registro con Firebase Auth.
+// Repositorio encargado de gestionar la autenticación con Firebase.
 class AuthRepository {
 
-    // Obtener instancia de Firebase Auth de forma segura para evitar cierres si falta google-services.json
+    // Obtener la instancia de Firebase Auth
     private fun obtenerAuth(): FirebaseAuth? {
         return try {
             FirebaseAuth.getInstance()
@@ -15,12 +16,12 @@ class AuthRepository {
         }
     }
 
-    // Retorna el usuario actualmente autenticado o null si no hay ninguno
+    // Obtener el usuario autenticado
     fun obtenerUsuarioActual(): FirebaseUser? {
         return obtenerAuth()?.currentUser
     }
 
-    // Inicia sesión con correo electrónico y contraseña.
+    // Iniciar sesión
     fun iniciarSesion(
         email: String,
         clave: String,
@@ -28,8 +29,9 @@ class AuthRepository {
         onError: (String) -> Unit
     ) {
         val auth = obtenerAuth()
+
         if (auth == null) {
-            onError("Firebase no está configurado. Falta el archivo google-services.json.")
+            onError("Firebase no está configurado.")
             return
         }
 
@@ -37,19 +39,22 @@ class AuthRepository {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val usuario = auth.currentUser
+
                     if (usuario != null) {
                         onExito(usuario)
                     } else {
-                        onError("No se pudo obtener la información del usuario.")
+                        onError("No se pudo obtener el usuario.")
                     }
                 } else {
-                    val mensajeError = task.exception?.localizedMessage ?: "Error al iniciar sesión."
-                    onError(mensajeError)
+                    onError(
+                        task.exception?.localizedMessage
+                            ?: "Error al iniciar sesión."
+                    )
                 }
             }
     }
 
-    // Registra un nuevo usuario con correo electrónico y contraseña.
+    // Registrar un usuario
     fun registrarUsuario(
         email: String,
         clave: String,
@@ -57,8 +62,9 @@ class AuthRepository {
         onError: (String) -> Unit
     ) {
         val auth = obtenerAuth()
+
         if (auth == null) {
-            onError("Firebase no está configurado. Falta el archivo google-services.json.")
+            onError("Firebase no está configurado.")
             return
         }
 
@@ -66,19 +72,22 @@ class AuthRepository {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val usuario = auth.currentUser
+
                     if (usuario != null) {
                         onExito(usuario)
                     } else {
                         onError("No se pudo registrar el usuario.")
                     }
                 } else {
-                    val mensajeError = task.exception?.localizedMessage ?: "Error al crear la cuenta."
-                    onError(mensajeError)
+                    onError(
+                        task.exception?.localizedMessage
+                            ?: "Error al crear la cuenta."
+                    )
                 }
             }
     }
 
-    // Cierra la sesión activa.
+    // Cerrar sesión
     fun cerrarSesion() {
         obtenerAuth()?.signOut()
     }
