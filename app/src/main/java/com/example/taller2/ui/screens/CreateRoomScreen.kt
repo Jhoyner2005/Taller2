@@ -10,6 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.taller2.Repository.GameRepository
+import kotlinx.coroutines.delay
 
 @Composable
 fun CreateRoomScreen(
@@ -23,6 +24,18 @@ fun CreateRoomScreen(
     var roomCode by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
+
+    // Evitar que la pantalla se quede cargando indefinidamente.
+    LaunchedEffect(isLoading) {
+        if (isLoading) {
+            delay(20000)
+
+            if (isLoading) {
+                isLoading = false
+                errorMessage = "Firebase no respondió. Revisa tu conexión y la configuración de la base de datos."
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -39,31 +52,31 @@ fun CreateRoomScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Crea una sala para jugar con otro participante."
-        )
+        Text("Crea una sala para jugar con otro participante.")
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        if (roomCode.isEmpty()) {
-
+        if (roomCode.isBlank()) {
             Button(
                 onClick = {
-                    isLoading = true
-                    errorMessage = null
+                    if (!isLoading) {
+                        isLoading = true
+                        errorMessage = null
 
-                    repository.createRoom(
-                        userId = userId,
-                        userName = userName,
-                        onSuccess = { code ->
-                            roomCode = code
-                            isLoading = false
-                        },
-                        onError = { error ->
-                            errorMessage = error
-                            isLoading = false
-                        }
-                    )
+                        repository.createRoom(
+                            userId = userId,
+                            userName = userName,
+                            onSuccess = { code ->
+                                roomCode = code
+                                isLoading = false
+                                errorMessage = null
+                            },
+                            onError = { error ->
+                                isLoading = false
+                                errorMessage = error
+                            }
+                        )
+                    }
                 },
                 enabled = !isLoading,
                 modifier = Modifier
@@ -79,9 +92,7 @@ fun CreateRoomScreen(
                     Text("Crear sala")
                 }
             }
-
         } else {
-
             Text(
                 text = "¡Sala creada!",
                 fontSize = 22.sp,
@@ -90,7 +101,7 @@ fun CreateRoomScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = "Comparte este código con tu compañero:")
+            Text("Comparte este código con tu compañero:")
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -103,7 +114,7 @@ fun CreateRoomScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = "Esperando al segundo jugador...")
+            Text("Esperando al segundo jugador...")
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -122,14 +133,25 @@ fun CreateRoomScreen(
                 text = errorMessage!!,
                 color = MaterialTheme.colorScheme.error
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TextButton(
+                onClick = {
+                    errorMessage = null
+                }
+            ) {
+                Text("Cerrar mensaje")
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        TextButton(onClick = onBack) {
+        TextButton(
+            onClick = onBack,
+            enabled = !isLoading
+        ) {
             Text("Volver al menú")
         }
     }
 }
-
-
