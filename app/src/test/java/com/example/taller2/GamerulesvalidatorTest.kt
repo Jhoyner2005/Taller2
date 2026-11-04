@@ -138,4 +138,34 @@ class GamerulesvalidatorTest {
         val winner = Gamerulesvalidator.determinarGanadorPorCierre(hands)
         assertEquals("p1", winner)
     }
+
+    // Test that first tile on an empty board MUST be a double tile (e.g. 1/1, 6/6)
+    @Test
+    fun firstTileOnEmptyBoard_doubleTile_returnsTrue() {
+        val emptyBoard = emptyList<Ficha>()
+        val doubleTile = Ficha(3, 3)
+
+        val isValid = Gamerulesvalidator.esMovimientoValido(
+            ficha = doubleTile,
+            fichasTablero = emptyBoard,
+            esComodin = false
+        )
+
+        assertTrue(isValid)
+    }
+
+    // Test that non-double tile is rejected on an empty board
+    @Test
+    fun firstTileOnEmptyBoard_nonDoubleTile_returnsFalse() {
+        val emptyBoard = emptyList<Ficha>()
+        val nonDoubleTile = Ficha(6, 4)
+
+        val isValid = Gamerulesvalidator.esMovimientoValido(
+            ficha = nonDoubleTile,
+            fichasTablero = emptyBoard,
+            esComodin = false
+        )
+
+        assertFalse(isValid)
+    }
 }

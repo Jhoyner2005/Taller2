@@ -44,9 +44,9 @@ object Gamerulesvalidator {
         fichasTablero: List<Ficha>,
         esComodin: Boolean = false
     ): Boolean {
-        // Si el tablero está vacío, cualquier ficha es válida
+        // Si el tablero está vacío, la primera ficha DEBE ser una ficha doble (ej: 0-0, 1-1, 6-6)
         if (fichasTablero.isEmpty()) {
-            return true
+            return ficha.esDoble || esComodin
         }
 
         // Si usó el poder Comodín, se permite colocar sin cumplir extremos
@@ -98,11 +98,10 @@ object Gamerulesvalidator {
         tieneComodin: Boolean = false
     ): Boolean {
         if (fichasTablero.isEmpty()) {
-            return mano.isNotEmpty()
-        }
-
-        if (tieneComodin && mano.isNotEmpty()) {
-            return true
+            if (tieneComodin && mano.isNotEmpty()) {
+                return true
+            }
+            return mano.any { it.esDoble }
         }
 
         for (ficha in mano) {

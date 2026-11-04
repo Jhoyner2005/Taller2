@@ -389,7 +389,11 @@ class GameRepository {
             }
 
             if (!Gamerulesvalidator.esMovimientoValido(tile, boardTilesList, isComodin)) {
-                onError("Movimiento no válido según las reglas.")
+                if (boardTilesList.isEmpty()) {
+                    onError("La primera ficha en salir debe ser un doble (ej: 1/1, 2/2, 6/6).")
+                } else {
+                    onError("Movimiento no válido según las reglas.")
+                }
                 return@addOnSuccessListener
             }
 
