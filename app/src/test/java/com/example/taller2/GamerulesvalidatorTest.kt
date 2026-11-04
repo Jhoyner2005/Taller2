@@ -114,4 +114,28 @@ class GamerulesvalidatorTest {
 
         assertFalse(hasMoves)
     }
+
+    // Test game lock winner determination: lower points wins
+    @Test
+    fun determinarGanadorPorCierre_lowerPoints_wins() {
+        val hands = mapOf(
+            "p1" to listOf(Ficha(1, 1)), // 2 pts
+            "p2" to listOf(Ficha(6, 6))  // 12 pts
+        )
+
+        val winner = Gamerulesvalidator.determinarGanadorPorCierre(hands)
+        assertEquals("p1", winner)
+    }
+
+    // Test game lock winner determination: tie in points -> fewer tiles wins
+    @Test
+    fun determinarGanadorPorCierre_equalPoints_fewerTiles_wins() {
+        val hands = mapOf(
+            "p1" to listOf(Ficha(6, 4)),               // 10 pts, 1 ficha
+            "p2" to listOf(Ficha(2, 3), Ficha(1, 4))  // 10 pts, 2 fichas
+        )
+
+        val winner = Gamerulesvalidator.determinarGanadorPorCierre(hands)
+        assertEquals("p1", winner)
+    }
 }

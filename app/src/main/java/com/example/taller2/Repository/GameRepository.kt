@@ -451,6 +451,41 @@ class GameRepository {
                     }
                 }
                 updates["players/$userId/score"] = newScore + opponentUnplayedPoints
+            } else {
+                val wellTiles = mutableListOf<Ficha>()
+                snapshot.child("well").children.forEach { tileSnap ->
+                    val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                    val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                    wellTiles.add(Ficha(a, b))
+                }
+
+                if (wellTiles.isEmpty()) {
+                    val allHandsMap = mutableMapOf<String, List<Ficha>>()
+                    allHandsMap[userId] = playerTiles
+
+                    snapshot.child("players").children.forEach { otherSnap ->
+                        val pId = otherSnap.child("id").getValue(String::class.java) ?: otherSnap.key ?: ""
+                        if (pId != userId) {
+                            val otherTiles = mutableListOf<Ficha>()
+                            otherSnap.child("tiles").children.forEach { tileSnap ->
+                                val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                                val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                                otherTiles.add(Ficha(a, b))
+                            }
+                            allHandsMap[pId] = otherTiles
+                        }
+                    }
+
+                    val hayMovimientoPosible = allHandsMap.values.any { mano ->
+                        Gamerulesvalidator.tieneMovimientosPosibles(mano, boardTilesList, false)
+                    }
+
+                    if (!hayMovimientoPosible) {
+                        val winner = Gamerulesvalidator.determinarGanadorPorCierre(allHandsMap)
+                        updates["status"] = "FINISHED"
+                        updates["winnerId"] = winner
+                    }
+                }
             }
 
             roomReference.updateChildren(updates).addOnCompleteListener { task ->
@@ -521,6 +556,33 @@ class GameRepository {
                 val playersCount = snapshot.child("players").childrenCount.toInt()
                 val nextTurnIndex = if (playersCount > 0) (currentTurnIndex + 1) % playersCount else 0
                 updates["currentTurnIndex"] = nextTurnIndex
+
+                // Si no hay pozo, verificar si la partida se trancó (ningún jugador puede tirar)
+                val allHandsMap = mutableMapOf<String, List<Ficha>>()
+                allHandsMap[userId] = playerTiles
+
+                snapshot.child("players").children.forEach { otherSnap ->
+                    val pId = otherSnap.child("id").getValue(String::class.java) ?: otherSnap.key ?: ""
+                    if (pId != userId) {
+                        val otherTiles = mutableListOf<Ficha>()
+                        otherSnap.child("tiles").children.forEach { tileSnap ->
+                            val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                            val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                            otherTiles.add(Ficha(a, b))
+                        }
+                        allHandsMap[pId] = otherTiles
+                    }
+                }
+
+                val hayMovimientoPosible = allHandsMap.values.any { mano ->
+                    Gamerulesvalidator.tieneMovimientosPosibles(mano, boardTilesList, false)
+                }
+
+                if (!hayMovimientoPosible) {
+                    val winner = Gamerulesvalidator.determinarGanadorPorCierre(allHandsMap)
+                    updates["status"] = "FINISHED"
+                    updates["winnerId"] = winner
+                }
             }
 
             roomReference.updateChildren(updates).addOnCompleteListener { task ->
@@ -632,6 +694,52 @@ class GameRepository {
             }
         }.addOnFailureListener { error ->
             onError(error.localizedMessage ?: "Error al conectar con la base de datos.")
+        }
+    }
+
+    // Si un jugador abandona o presiona Salir, el otro jugador gana automáticamente
+    fun surrenderOrLeaveRoom(
+        roomCode: String,
+        userId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val roomReference = roomsReference.child(roomCode.trim())
+
+        roomReference.get().addOnSuccessListener { snapshot ->
+            if (!snapshot.exists()) {
+                onSuccess()
+                return@addOnSuccessListener
+            }
+
+            val status = snapshot.child("status").getValue(String::class.java) ?: ""
+
+            if (status == "PLAYING" || status == "READY") {
+                var opponentId: String? = null
+
+                for (pSnap in snapshot.child("players").children) {
+                    val pId = pSnap.child("id").getValue(String::class.java) ?: pSnap.key ?: ""
+                    if (pId != userId) {
+                        opponentId = pId
+                        break
+                    }
+                }
+
+                val updates = mutableMapOf<String, Any>()
+                updates["status"] = "FINISHED"
+
+                if (!opponentId.isNullOrBlank()) {
+                    updates["winnerId"] = opponentId
+                }
+
+                roomReference.updateChildren(updates).addOnCompleteListener {
+                    onSuccess()
+                }
+            } else {
+                onSuccess()
+            }
+        }.addOnFailureListener {
+            onSuccess()
         }
     }
 }

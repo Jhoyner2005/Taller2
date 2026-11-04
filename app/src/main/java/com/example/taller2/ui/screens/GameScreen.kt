@@ -497,7 +497,14 @@ fun GameScreen(
                 }
             )
         },
-        onExit = onExit,
+        onExit = {
+            repository.surrenderOrLeaveRoom(
+                roomCode = roomCode,
+                userId = userId,
+                onSuccess = onExit,
+                onError = { onExit() }
+            )
+        },
         errorMessage = errorMessage,
         onDismissError = { errorMessage = null }
     )

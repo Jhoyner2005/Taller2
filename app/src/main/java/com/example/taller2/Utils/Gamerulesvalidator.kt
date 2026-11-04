@@ -128,4 +128,36 @@ object Gamerulesvalidator {
 
         return puntosBase
     }
+
+    // Determina el ganador cuando la partida se tranca o se acaban los movimientos y el pozo.
+    // Criterio:
+    // 1. Menor sumatoria de puntos en las fichas restantes de la mano.
+    // 2. En caso de empate en la sumatoria de puntos, gana el que tenga menor cantidad de fichas.
+    fun determinarGanadorPorCierre(
+        manosJugadores: Map<String, List<Ficha>>
+    ): String {
+        if (manosJugadores.isEmpty()) return ""
+
+        var idGanador = ""
+        var menorPuntaje = Int.MAX_VALUE
+        var menorCantidadFichas = Int.MAX_VALUE
+
+        for ((jugadorId, fichas) in manosJugadores) {
+            val sumaPuntos = fichas.sumOf { it.puntos }
+            val cantidadFichas = fichas.size
+
+            if (sumaPuntos < menorPuntaje) {
+                menorPuntaje = sumaPuntos
+                menorCantidadFichas = cantidadFichas
+                idGanador = jugadorId
+            } else if (sumaPuntos == menorPuntaje) {
+                if (cantidadFichas < menorCantidadFichas) {
+                    menorCantidadFichas = cantidadFichas
+                    idGanador = jugadorId
+                }
+            }
+        }
+
+        return idGanador
+    }
 }
