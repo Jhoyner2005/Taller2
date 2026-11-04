@@ -39,6 +39,9 @@ fun GameScreen(
     onPowerSelected: (Poder) -> Unit,
     onExit: () -> Unit,
 
+    errorMessage: String? = null,
+    onDismissError: () -> Unit = {},
+
     modifier: Modifier = Modifier
 ) {
     var selectedTile by remember {
@@ -117,6 +120,35 @@ fun GameScreen(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
+
+        if (errorMessage != null) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(onClick = onDismissError) {
+                        Text("OK", color = MaterialTheme.colorScheme.onErrorContainer)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         // TABLA DE PUNTUACIÓN
         ScoreTableComponent(
@@ -471,7 +503,9 @@ fun GameScreen(
                 }
             )
         },
-        onExit = onExit
+        onExit = onExit,
+        errorMessage = errorMessage,
+        onDismissError = { errorMessage = null }
     )
 }
 

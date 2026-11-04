@@ -362,6 +362,25 @@ class GameRepository {
                 return@addOnSuccessListener
             }
 
+            val currentTurnIndex = snapshot.child("currentTurnIndex").getValue(Int::class.java) ?: 0
+            val hostId = snapshot.child("hostId").getValue(String::class.java) ?: ""
+            val playerIdsOrdered = mutableListOf<String>()
+
+            for (pSnap in snapshot.child("players").children) {
+                val pId = pSnap.child("id").getValue(String::class.java) ?: pSnap.key ?: ""
+                playerIdsOrdered.add(pId)
+            }
+
+            playerIdsOrdered.sortWith(Comparator { a, b ->
+                if (a == hostId) -1 else if (b == hostId) 1 else a.compareTo(b)
+            })
+
+            val activeTurnUserId = if (currentTurnIndex in playerIdsOrdered.indices) playerIdsOrdered[currentTurnIndex] else ""
+            if (activeTurnUserId.isNotEmpty() && activeTurnUserId != userId) {
+                onError("No es tu turno de jugar.")
+                return@addOnSuccessListener
+            }
+
             val boardTilesList = mutableListOf<Ficha>()
             snapshot.child("boardTiles").children.forEach { tileSnap ->
                 val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
@@ -384,11 +403,15 @@ class GameRepository {
 
             val playerSnap = snapshot.child("players").child(userId)
             val playerTiles = mutableListOf<Ficha>()
+            var tileRemoved = false
+
             playerSnap.child("tiles").children.forEach { tileSnap ->
                 val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
                 val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
                 val currentTile = Ficha(a, b)
-                if (currentTile != tile) {
+                if (!tileRemoved && (currentTile == tile || currentTile == tile.invertida())) {
+                    tileRemoved = true
+                } else {
                     playerTiles.add(currentTile)
                 }
             }
@@ -398,8 +421,7 @@ class GameRepository {
             val pointsGained = Gamerulesvalidator.calcularPuntajeJugada(adjustedTile, activeEvent)
             val newScore = currentScore + pointsGained
 
-            val currentTurnIndex = snapshot.child("currentTurnIndex").getValue(Int::class.java) ?: 0
-            val playersCount = snapshot.child("players").childrenCount.toInt()
+            val playersCount = playerIdsOrdered.size
             val nextTurnIndex = if (playersCount > 0) (currentTurnIndex + 1) % playersCount else 0
 
             fun convertTiles(tiles: List<Ficha>): List<Map<String, Int>> {
