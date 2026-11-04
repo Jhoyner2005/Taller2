@@ -43,7 +43,7 @@ fun Lobbyscreen(
         Spacer(modifier = Modifier.height(10.dp))
 
         Text(
-            text = "La estrategia está en tus manos",
+            text = "The strategy is in your hands",
             fontSize = 14.sp,
             color = secondaryText
         )
@@ -62,7 +62,7 @@ fun Lobbyscreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Menú principal",
+                    text = "Main menu",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -71,7 +71,7 @@ fun Lobbyscreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "¿Qué deseas hacer?",
+                    text = "What would you like to do?",
                     fontSize = 14.sp,
                     color = secondaryText
                 )
@@ -89,7 +89,7 @@ fun Lobbyscreen(
                     )
                 ) {
                     Text(
-                        text = "Nueva partida",
+                        text = "New game",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -112,7 +112,7 @@ fun Lobbyscreen(
                     )
                 ) {
                     Text(
-                        text = "Unirse a partida",
+                        text = "Join game",
                         fontSize = 16.sp
                     )
                 }
@@ -134,7 +134,7 @@ fun Lobbyscreen(
                     )
                 ) {
                     Text(
-                        text = "Partidas disponibles",
+                        text = "Available entries",
                         fontSize = 16.sp
                     )
                 }
@@ -147,7 +147,7 @@ fun Lobbyscreen(
             onClick = onCerrarSesion
         ) {
             Text(
-                text = "Cerrar sesión",
+                text = "Log out",
                 color = Color(0xFFFF8585),
                 fontSize = 14.sp
             )

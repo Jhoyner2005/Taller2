@@ -57,7 +57,7 @@ fun Loginscreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "La estrategia está en tus manos",
+            text = "The strategy is in your hands",
             fontSize = 14.sp,
             color = SecondaryText
         )
@@ -80,7 +80,7 @@ fun Loginscreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = if (esModoRegistro) "Crear cuenta" else "¡Bienvenido!",
+                    text = if (esModoRegistro) "Create account" else "Welcome!",
                     fontSize = 25.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -90,9 +90,9 @@ fun Loginscreen(
 
                 Text(
                     text = if (esModoRegistro)
-                        "Regístrate para comenzar a jugar"
+                        "Sign up to start playing"
                     else
-                        "Inicia sesión y demuestra tu estrategia",
+                        "Log in and demonstrate your strategy",
                     fontSize = 13.sp,
                     color = SecondaryText
                 )
@@ -105,7 +105,7 @@ fun Loginscreen(
                         email = it
                         authViewModel.limpiarError()
                     },
-                    label = { Text("Correo electrónico") },
+                    label = { Text("Email") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
@@ -128,7 +128,7 @@ fun Loginscreen(
                         password = it
                         authViewModel.limpiarError()
                     },
-                    label = { Text("Contraseña") },
+                    label = { Text("Password") },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
@@ -180,9 +180,9 @@ fun Loginscreen(
                     ) {
                         Text(
                             text = if (esModoRegistro)
-                                "Crear cuenta"
+                                "Create account"
                             else
-                                "Iniciar sesión",
+                                "Login",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -198,9 +198,9 @@ fun Loginscreen(
                     ) {
                         Text(
                             text = if (esModoRegistro)
-                                "¿Ya tienes cuenta? Inicia sesión"
+                                "Already have an account? Log in"
                             else
-                                "¿No tienes cuenta? Regístrate",
+                                "Don't have an account? Sign up",
                             color = AccentColor,
                             fontSize = 13.sp
                         )
@@ -212,7 +212,7 @@ fun Loginscreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "DOMINÓ CAOS • Juega con estrategia",
+            text = "DOMINÓ CAOS • Play with strategy",
             fontSize = 11.sp,
             color = SecondaryText
         )

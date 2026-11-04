@@ -76,7 +76,7 @@ fun AvailableGamesScreen(
             enabled = !isJoining
         ) {
             Text(
-                text = "Volver",
+                text = "Return",
                 color = accentColor
             )
         }
@@ -84,7 +84,7 @@ fun AvailableGamesScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Partidas disponibles",
+            text = "Available entries",
             fontSize = 27.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White
@@ -93,7 +93,7 @@ fun AvailableGamesScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Selecciona una sala para unirte a la partida.",
+            text = "Select a room to join the game.",
             fontSize = 14.sp,
             color = secondaryText
         )
@@ -128,7 +128,7 @@ fun AvailableGamesScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No hay partidas disponibles en este momento.",
+                        text = "There are no games available at this moment..",
                         color = secondaryText,
                         fontSize = 15.sp
                     )
@@ -152,7 +152,7 @@ fun AvailableGamesScreen(
                             .firstOrNull()
                             ?.child("name")
                             ?.getValue(String::class.java)
-                            ?: "Jugador"
+                            ?: "Player"
 
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -165,7 +165,7 @@ fun AvailableGamesScreen(
                                 modifier = Modifier.padding(20.dp)
                             ) {
                                 Text(
-                                    text = "Sala de $hostName",
+                                    text = "Room of $hostName",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -174,7 +174,7 @@ fun AvailableGamesScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 Text(
-                                    text = "Código: $roomCode",
+                                    text = "Code: $roomCode",
                                     color = secondaryText,
                                     fontSize = 14.sp
                                 )
@@ -214,7 +214,7 @@ fun AvailableGamesScreen(
                                             strokeWidth = 2.dp
                                         )
                                     } else {
-                                        Text("Unirse a partida")
+                                        Text("Join game")
                                     }
                                 }
                             }

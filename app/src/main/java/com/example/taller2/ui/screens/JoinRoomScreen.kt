@@ -34,14 +34,14 @@ fun JoinRoomScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Unirse a Partida",
+            text = "Join Game",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Ingresa el código de la sala.")
+        Text(text = "Enter the room code.")
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -51,8 +51,8 @@ fun JoinRoomScreen(
                 roomCode = value.filter { it.isDigit() }.take(6)
                 errorMessage = null
             },
-            label = { Text("Código de la partida") },
-            placeholder = { Text("Ejemplo: 123456") },
+            label = { Text("Line item code") },
+            placeholder = { Text("Example: 123456") },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number
             ),
@@ -65,7 +65,7 @@ fun JoinRoomScreen(
         Button(
             onClick = {
                 if (roomCode.length != 6) {
-                    errorMessage = "El código debe tener 6 números."
+                    errorMessage = "The code must have 6 numbers."
                 } else {
                     isLoading = true
                     errorMessage = null
@@ -96,7 +96,7 @@ fun JoinRoomScreen(
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("Unirse a la sala")
+                Text("Join the room")
             }
         }
 
@@ -112,7 +112,7 @@ fun JoinRoomScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         TextButton(onClick = onBack) {
-            Text("Volver al menú")
+            Text("Return to menu")
         }
     }
 }

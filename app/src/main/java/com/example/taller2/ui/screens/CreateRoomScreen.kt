@@ -32,7 +32,7 @@ fun CreateRoomScreen(
 
             if (isLoading) {
                 isLoading = false
-                errorMessage = "Firebase no respondió. Revisa tu conexión y la configuración de la base de datos."
+                errorMessage = "Firebase did not respond. Please check your connection and database settings."
             }
         }
     }
@@ -45,14 +45,14 @@ fun CreateRoomScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Nueva Partida",
+            text = "New Game",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Crea una sala para jugar con otro participante.")
+        Text("Create a room to play with another participant.")
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -89,19 +89,19 @@ fun CreateRoomScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Crear sala")
+                    Text("Create room")
                 }
             }
         } else {
             Text(
-                text = "¡Sala creada!",
+                text = "Room created!",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Comparte este código con tu compañero:")
+            Text("Share this code with your partner:")
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -114,7 +114,7 @@ fun CreateRoomScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Esperando al segundo jugador...")
+            Text("Waiting for the second player...")
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -122,7 +122,7 @@ fun CreateRoomScreen(
                 onClick = { onRoomCreated(roomCode) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Ver sala")
+                Text("View room")
             }
         }
 
@@ -141,7 +141,7 @@ fun CreateRoomScreen(
                     errorMessage = null
                 }
             ) {
-                Text("Cerrar mensaje")
+                Text("Close message")
             }
         }
 
@@ -151,7 +151,7 @@ fun CreateRoomScreen(
             onClick = onBack,
             enabled = !isLoading
         ) {
-            Text("Volver al menú")
+            Text("Return to menu")
         }
     }
 }

@@ -24,7 +24,7 @@ fun RoomScreen(
         mutableStateOf(false)
     }
     var status by remember { mutableStateOf("WAITING") }
-    var hostName by remember { mutableStateOf("Anfitrión") }
+    var hostName by remember { mutableStateOf("Host") }
     var hostId by remember { mutableStateOf("") }
     var guestName by remember { mutableStateOf<String?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -43,7 +43,7 @@ fun RoomScreen(
 
                     val playersSnapshot = snapshot.child("players")
                     for (playerSnap in playersSnapshot.children) {
-                        val pName = playerSnap.child("name").getValue(String::class.java) ?: "Jugador"
+                        val pName = playerSnap.child("name").getValue(String::class.java) ?: "Player"
                         val pIsHost = playerSnap.child("isHost").getValue(Boolean::class.java) ?: false
 
                         if (pIsHost) {
@@ -59,7 +59,7 @@ fun RoomScreen(
                         onStartGame(roomCode)
                     }
                 } else {
-                    errorMessage = "La sala no existe o fue eliminada."
+                    errorMessage = "The room does not exist or has been deleted."
                 }
             },
             onError = { error ->
@@ -80,14 +80,14 @@ fun RoomScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Sala de Espera",
+            text = "Waiting room",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Código de acceso:")
+        Text(text = "Access code:")
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -100,30 +100,30 @@ fun RoomScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Tarjeta con información de los jugadores en tiempo real
+        //Card with player information
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Jugadores en la sala:",
+                    text = "Players in the room:",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Text(text = " Anfitrión: $hostName")
+                Text(text = " Host: $hostName")
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 if (guestName != null) {
-                    Text(text = " Oponente: $guestName")
+                    Text(text = " Opponent: $guestName")
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Esperando al oponente...", color = Color.Gray)
+                        Text(text = "Waiting for the opponent...", color = Color.Gray)
                     }
                 }
             }
@@ -131,7 +131,6 @@ fun RoomScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Si es el Host y la sala está lista (2 jugadores), muestra botón Iniciar Partida
         if (isHost && status == "READY") {
             Button(
                 onClick = {
@@ -161,7 +160,7 @@ fun RoomScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("¡Iniciar Partida!")
+                    Text("Start Game!")
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -176,7 +175,7 @@ fun RoomScreen(
         }
 
         TextButton(onClick = onBack) {
-            Text("Volver al menú")
+            Text("Return to menu")
         }
     }
 }
