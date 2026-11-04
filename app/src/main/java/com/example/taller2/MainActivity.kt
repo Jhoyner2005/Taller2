@@ -5,16 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.Button
-import androidx.compose.foundation.layout.Column
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -26,6 +22,7 @@ import com.example.taller2.ui.screens.Loginscreen
 import com.example.taller2.ui.screens.CreateRoomScreen
 import com.example.taller2.ui.screens.JoinRoomScreen
 import com.example.taller2.ui.screens.RoomScreen
+import com.example.taller2.ui.screens.AvailableGamesScreen
 import com.example.taller2.ui.theme.Taller2Theme
 
 class MainActivity : ComponentActivity() {
@@ -77,6 +74,9 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToJoin = {
                                     navController.navigate("joinRoom")
                                 },
+                                onNavigateToAvailableGames = {
+                                    navController.navigate("availableGames")
+                                },
                                 onCerrarSesion = {
                                     authViewModel.cerrarSesion()
 
@@ -110,6 +110,7 @@ class MainActivity : ComponentActivity() {
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text("No se pudo obtener el usuario.")
+
                                     Button(
                                         onClick = {
                                             navController.popBackStack()
@@ -121,7 +122,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        // Unirse a una partida
+                        // Unirse a una partida mediante código
                         composable("joinRoom") {
                             val userId = authViewModel.getCurrentUserId()
 
@@ -142,6 +143,40 @@ class MainActivity : ComponentActivity() {
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text("No se pudo obtener el usuario.")
+
+                                    Button(
+                                        onClick = {
+                                            navController.popBackStack()
+                                        }
+                                    ) {
+                                        Text("Volver")
+                                    }
+                                }
+                            }
+                        }
+
+                        // Partidas disponibles
+                        composable("availableGames") {
+                            val userId = authViewModel.getCurrentUserId()
+
+                            if (userId != null) {
+                                AvailableGamesScreen(
+                                    userId = userId,
+                                    userName = authViewModel.getCurrentUserName(),
+                                    onBack = {
+                                        navController.popBackStack()
+                                    },
+                                    onJoinRoom = { roomCode ->
+                                        navController.navigate("room/$roomCode")
+                                    }
+                                )
+                            } else {
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text("No se pudo obtener el usuario.")
+
                                     Button(
                                         onClick = {
                                             navController.popBackStack()
@@ -162,8 +197,12 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         ) { backStackEntry ->
-                            val roomCode = backStackEntry.arguments?.getString("roomCode") ?: ""
-                            val userId = authViewModel.getCurrentUserId() ?: ""
+
+                            val roomCode =
+                                backStackEntry.arguments?.getString("roomCode") ?: ""
+
+                            val userId =
+                                authViewModel.getCurrentUserId() ?: ""
 
                             RoomScreen(
                                 roomCode = roomCode,

@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 fun Lobbyscreen(
     onNavigateToGame: () -> Unit,
     onNavigateToJoin: () -> Unit,
+    onNavigateToAvailableGames: () -> Unit,
     onCerrarSesion: () -> Unit
 ) {
     val backgroundColor = Color(0xFF11152B)
@@ -119,7 +120,7 @@ fun Lobbyscreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedButton(
-                    onClick = { },
+                    onClick = onNavigateToAvailableGames,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),

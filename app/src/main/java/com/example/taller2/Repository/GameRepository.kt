@@ -58,6 +58,50 @@ class GameRepository {
             }
     }
 
+    // Escuchar las partidas disponibles en tiempo real
+    fun listenToAvailableRooms(
+        userId: String,
+        onUpdate: (List<DataSnapshot>) -> Unit,
+        onError: (String) -> Unit
+    ): ValueEventListener {
+
+        val listener = object : ValueEventListener {
+
+            override fun onDataChange(snapshot: DataSnapshot) {
+
+                val availableRooms = snapshot.children.filter { room ->
+
+                    val status = room.child("status")
+                        .getValue(String::class.java)
+
+                    val playersSnapshot = room.child("players")
+                    val playersCount = playersSnapshot.childrenCount
+
+                    status == "WAITING" &&
+                            playersCount < 2L &&
+                            !playersSnapshot.hasChild(userId)
+                }
+
+                onUpdate(availableRooms)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                onError(error.message)
+            }
+        }
+
+        roomsReference.addValueEventListener(listener)
+
+        return listener
+    }
+
+    // Dejar de escuchar las partidas disponibles
+    fun removeAvailableRoomsListener(
+        listener: ValueEventListener
+    ) {
+        roomsReference.removeEventListener(listener)
+    }
+
     // Unirse a una sala existente
     fun joinRoom(
         roomCode: String,
@@ -227,7 +271,6 @@ class GameRepository {
                 updates["currentRound"] = 1
                 updates["maxRounds"] = 10
 
-                // Guardar las fichas y puntuaciones de cada jugador
                 updates["players/${orderedPlayerIds[0]}/tiles"] =
                     convertTiles(firstHand)
 
@@ -276,6 +319,7 @@ class GameRepository {
         onError: (String) -> Unit
     ): ValueEventListener {
         val roomReference = roomsReference.child(roomCode.trim())
+
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 onUpdate(snapshot)
@@ -285,7 +329,9 @@ class GameRepository {
                 onError(error.message)
             }
         }
+
         roomReference.addValueEventListener(listener)
+
         return listener
     }
 
@@ -297,5 +343,3 @@ class GameRepository {
         roomsReference.child(roomCode.trim()).removeEventListener(listener)
     }
 }
-
-
