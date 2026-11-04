@@ -20,7 +20,9 @@ fun RoomScreen(
     onStartGame: (String) -> Unit
 ) {
     val repository = remember { GameRepository() }
-
+    var hasNavigated by remember(roomCode) {
+        mutableStateOf(false)
+    }
     var status by remember { mutableStateOf("WAITING") }
     var hostName by remember { mutableStateOf("Anfitrión") }
     var hostId by remember { mutableStateOf("") }
@@ -52,7 +54,8 @@ fun RoomScreen(
                     }
 
                     // Navegar automáticamente a la partida cuando el estado pase a PLAYING
-                    if (status == "PLAYING") {
+                    if (status == "PLAYING" && !hasNavigated) {
+                        hasNavigated = true
                         onStartGame(roomCode)
                     }
                 } else {

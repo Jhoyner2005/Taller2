@@ -3,6 +3,7 @@ package com.example.taller2.Repository
 
 import com.example.taller2.Model.Ficha
 import com.example.taller2.Model.Poder
+import com.example.taller2.Utils.Gamerulesvalidator
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -341,5 +342,199 @@ class GameRepository {
         listener: ValueEventListener
     ) {
         roomsReference.child(roomCode.trim()).removeEventListener(listener)
+    }
+
+    // Jugar una ficha en la mesa
+    fun playTile(
+        roomCode: String,
+        userId: String,
+        tile: Ficha,
+        playOnLeft: Boolean,
+        isComodin: Boolean,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val roomReference = roomsReference.child(roomCode.trim())
+
+        roomReference.get().addOnSuccessListener { snapshot ->
+            if (!snapshot.exists()) {
+                onError("La sala no existe.")
+                return@addOnSuccessListener
+            }
+
+            val boardTilesList = mutableListOf<Ficha>()
+            snapshot.child("boardTiles").children.forEach { tileSnap ->
+                val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                boardTilesList.add(Ficha(a, b))
+            }
+
+            if (!Gamerulesvalidator.esMovimientoValido(tile, boardTilesList, isComodin)) {
+                onError("Movimiento no válido según las reglas.")
+                return@addOnSuccessListener
+            }
+
+            val adjustedTile = Gamerulesvalidator.obtenerFichaAjustada(tile, boardTilesList, playOnLeft)
+
+            if (playOnLeft) {
+                boardTilesList.add(0, adjustedTile)
+            } else {
+                boardTilesList.add(adjustedTile)
+            }
+
+            val playerSnap = snapshot.child("players").child(userId)
+            val playerTiles = mutableListOf<Ficha>()
+            playerSnap.child("tiles").children.forEach { tileSnap ->
+                val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                val currentTile = Ficha(a, b)
+                if (currentTile != tile) {
+                    playerTiles.add(currentTile)
+                }
+            }
+
+            val currentScore = playerSnap.child("score").getValue(Int::class.java) ?: 0
+            val activeEvent = snapshot.child("activeEvent").getValue(String::class.java) ?: "NINGUNO"
+            val pointsGained = Gamerulesvalidator.calcularPuntajeJugada(adjustedTile, activeEvent)
+            val newScore = currentScore + pointsGained
+
+            val currentTurnIndex = snapshot.child("currentTurnIndex").getValue(Int::class.java) ?: 0
+            val playersCount = snapshot.child("players").childrenCount.toInt()
+            val nextTurnIndex = if (playersCount > 0) (currentTurnIndex + 1) % playersCount else 0
+
+            fun convertTiles(tiles: List<Ficha>): List<Map<String, Int>> {
+                return tiles.map { mapOf("ladoA" to it.ladoA, "ladoB" to it.ladoB) }
+            }
+
+            val updates = mutableMapOf<String, Any>()
+            updates["boardTiles"] = convertTiles(boardTilesList)
+            updates["players/$userId/tiles"] = convertTiles(playerTiles)
+            updates["players/$userId/score"] = newScore
+            updates["currentTurnIndex"] = nextTurnIndex
+
+            if (playerTiles.isEmpty()) {
+                updates["winnerId"] = userId
+                updates["status"] = "FINISHED"
+            }
+
+            roomReference.updateChildren(updates).addOnCompleteListener { task ->
+                if (task.isSuccessful) onSuccess() else onError(task.exception?.localizedMessage ?: "Error al jugar la ficha.")
+            }
+        }.addOnFailureListener { error ->
+            onError(error.localizedMessage ?: "Error al conectar con la base de datos.")
+        }
+    }
+
+    // Pasar turno o comer del pozo
+    fun passTurn(
+        roomCode: String,
+        userId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val roomReference = roomsReference.child(roomCode.trim())
+
+        roomReference.get().addOnSuccessListener { snapshot ->
+            if (!snapshot.exists()) {
+                onError("La sala no existe.")
+                return@addOnSuccessListener
+            }
+
+            val wellTiles = mutableListOf<Ficha>()
+            snapshot.child("well").children.forEach { tileSnap ->
+                val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                wellTiles.add(Ficha(a, b))
+            }
+
+            fun convertTiles(tiles: List<Ficha>): List<Map<String, Int>> {
+                return tiles.map { mapOf("ladoA" to it.ladoA, "ladoB" to it.ladoB) }
+            }
+
+            val updates = mutableMapOf<String, Any>()
+
+            if (wellTiles.isNotEmpty()) {
+                val drawnTile = wellTiles.removeAt(0)
+                val playerSnap = snapshot.child("players").child(userId)
+                val playerTiles = mutableListOf<Ficha>()
+                playerSnap.child("tiles").children.forEach { tileSnap ->
+                    val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                    val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                    playerTiles.add(Ficha(a, b))
+                }
+                playerTiles.add(drawnTile)
+
+                updates["well"] = convertTiles(wellTiles)
+                updates["players/$userId/tiles"] = convertTiles(playerTiles)
+            } else {
+                val currentTurnIndex = snapshot.child("currentTurnIndex").getValue(Int::class.java) ?: 0
+                val playersCount = snapshot.child("players").childrenCount.toInt()
+                val nextTurnIndex = if (playersCount > 0) (currentTurnIndex + 1) % playersCount else 0
+                updates["currentTurnIndex"] = nextTurnIndex
+            }
+
+            roomReference.updateChildren(updates).addOnCompleteListener { task ->
+                if (task.isSuccessful) onSuccess() else onError(task.exception?.localizedMessage ?: "Error al pasar turno.")
+            }
+        }.addOnFailureListener { error ->
+            onError(error.localizedMessage ?: "Error al conectar con la base de datos.")
+        }
+    }
+
+    // Usar un poder especial
+    fun usePower(
+        roomCode: String,
+        userId: String,
+        power: Poder,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val roomReference = roomsReference.child(roomCode.trim())
+
+        roomReference.get().addOnSuccessListener { snapshot ->
+            if (!snapshot.exists()) {
+                onError("La sala no existe.")
+                return@addOnSuccessListener
+            }
+
+            val playerSnap = snapshot.child("players").child(userId)
+            val currentUses = playerSnap.child("powerUses").child(power.name).getValue(Int::class.java) ?: 0
+
+            if (currentUses <= 0) {
+                onError("No te quedan usos de este poder.")
+                return@addOnSuccessListener
+            }
+
+            val updates = mutableMapOf<String, Any>()
+            updates["players/$userId/powerUses/${power.name}"] = currentUses - 1
+
+            val currentPowersUsed = playerSnap.child("powersUsed").getValue(Int::class.java) ?: 0
+            updates["players/$userId/powersUsed"] = currentPowersUsed + 1
+
+            when (power) {
+                Poder.SALTO -> {
+                    val currentTurnIndex = snapshot.child("currentTurnIndex").getValue(Int::class.java) ?: 0
+                    val playersCount = snapshot.child("players").childrenCount.toInt()
+                    val nextTurnIndex = if (playersCount > 0) (currentTurnIndex + 2) % playersCount else 0
+                    updates["currentTurnIndex"] = nextTurnIndex
+                }
+                Poder.INVERSION -> {
+                    val directionReversed = snapshot.child("directionReversed").getValue(Boolean::class.java) ?: false
+                    updates["directionReversed"] = !directionReversed
+                }
+                Poder.COMODIN -> {
+                    updates["pendingPower"] = Poder.COMODIN.name
+                }
+                Poder.INTERCAMBIO -> {
+                    updates["pendingPower"] = Poder.INTERCAMBIO.name
+                }
+            }
+
+            roomReference.updateChildren(updates).addOnCompleteListener { task ->
+                if (task.isSuccessful) onSuccess() else onError(task.exception?.localizedMessage ?: "Error al usar poder.")
+            }
+        }.addOnFailureListener { error ->
+            onError(error.localizedMessage ?: "Error al conectar con la base de datos.")
+        }
     }
 }

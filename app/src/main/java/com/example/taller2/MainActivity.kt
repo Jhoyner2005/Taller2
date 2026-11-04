@@ -22,6 +22,7 @@ import com.example.taller2.ui.screens.Loginscreen
 import com.example.taller2.ui.screens.CreateRoomScreen
 import com.example.taller2.ui.screens.JoinRoomScreen
 import com.example.taller2.ui.screens.RoomScreen
+import com.example.taller2.ui.screens.GameScreen
 import com.example.taller2.ui.screens.AvailableGamesScreen
 import com.example.taller2.ui.theme.Taller2Theme
 
@@ -216,6 +217,35 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onStartGame = { code ->
                                     navController.navigate("game/$code")
+                                }
+                            )
+                        }
+
+                        // Pantalla de la partida
+                        composable(
+                            route = "game/{roomCode}",
+                            arguments = listOf(
+                                navArgument("roomCode") {
+                                    type = NavType.StringType
+                                }
+                            )
+                        ) { backStackEntry ->
+
+                            val roomCode =
+                                backStackEntry.arguments?.getString("roomCode") ?: ""
+
+                            val userId =
+                                authViewModel.getCurrentUserId() ?: ""
+
+                            GameScreen(
+                                roomCode = roomCode,
+                                userId = userId,
+                                onExit = {
+                                    navController.navigate("lobby") {
+                                        popUpTo("lobby") {
+                                            inclusive = false
+                                        }
+                                    }
                                 }
                             )
                         }
