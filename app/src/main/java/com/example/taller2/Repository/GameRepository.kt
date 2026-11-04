@@ -437,6 +437,20 @@ class GameRepository {
             if (playerTiles.isEmpty()) {
                 updates["winnerId"] = userId
                 updates["status"] = "FINISHED"
+
+                // Quien gana la mano obtiene la suma de los puntos de las fichas que han quedado sin colocar por los oponentes
+                var opponentUnplayedPoints = 0
+                snapshot.child("players").children.forEach { otherPlayerSnap ->
+                    val otherId = otherPlayerSnap.child("id").getValue(String::class.java) ?: otherPlayerSnap.key ?: ""
+                    if (otherId != userId) {
+                        otherPlayerSnap.child("tiles").children.forEach { tileSnap ->
+                            val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                            val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                            opponentUnplayedPoints += Ficha(a, b).puntos
+                        }
+                    }
+                }
+                updates["players/$userId/score"] = newScore + opponentUnplayedPoints
             }
 
             roomReference.updateChildren(updates).addOnCompleteListener { task ->
@@ -462,6 +476,30 @@ class GameRepository {
                 return@addOnSuccessListener
             }
 
+            val boardTilesList = mutableListOf<Ficha>()
+            snapshot.child("boardTiles").children.forEach { tileSnap ->
+                val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                boardTilesList.add(Ficha(a, b))
+            }
+
+            val playerSnap = snapshot.child("players").child(userId)
+            val playerTiles = mutableListOf<Ficha>()
+            playerSnap.child("tiles").children.forEach { tileSnap ->
+                val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                playerTiles.add(Ficha(a, b))
+            }
+
+            val pendingPower = snapshot.child("pendingPower").getValue(String::class.java) ?: ""
+            val tieneComodin = pendingPower == Poder.COMODIN.name
+
+            // Regla: El jugador que puede colocar al menos una de sus fichas NO puede pasar ni robar del pozo.
+            if (Gamerulesvalidator.tieneMovimientosPosibles(playerTiles, boardTilesList, tieneComodin)) {
+                onError("Tienes fichas jugables en tu mano, no puedes pasar ni robar.")
+                return@addOnSuccessListener
+            }
+
             val wellTiles = mutableListOf<Ficha>()
             snapshot.child("well").children.forEach { tileSnap ->
                 val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
@@ -477,13 +515,6 @@ class GameRepository {
 
             if (wellTiles.isNotEmpty()) {
                 val drawnTile = wellTiles.removeAt(0)
-                val playerSnap = snapshot.child("players").child(userId)
-                val playerTiles = mutableListOf<Ficha>()
-                playerSnap.child("tiles").children.forEach { tileSnap ->
-                    val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
-                    val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
-                    playerTiles.add(Ficha(a, b))
-                }
                 playerTiles.add(drawnTile)
 
                 updates["well"] = convertTiles(wellTiles)

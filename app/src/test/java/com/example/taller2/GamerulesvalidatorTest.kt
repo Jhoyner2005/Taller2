@@ -84,4 +84,34 @@ class GamerulesvalidatorTest {
 
         assertEquals(20, score)
     }
+
+    // Test hasPossibleMoves when hand contains a matching tile
+    @Test
+    fun tieneMovimientosPosibles_withMatchingTile_returnsTrue() {
+        val board = listOf(Ficha(6, 6), Ficha(6, 4))
+        val hand = listOf(Ficha(1, 1), Ficha(4, 3))
+
+        val hasMoves = Gamerulesvalidator.tieneMovimientosPosibles(
+            mano = hand,
+            fichasTablero = board,
+            tieneComodin = false
+        )
+
+        assertTrue(hasMoves)
+    }
+
+    // Test hasPossibleMoves when hand contains no matching tiles
+    @Test
+    fun tieneMovimientosPosibles_withoutMatchingTile_returnsFalse() {
+        val board = listOf(Ficha(6, 6), Ficha(6, 4))
+        val hand = listOf(Ficha(1, 1), Ficha(2, 3))
+
+        val hasMoves = Gamerulesvalidator.tieneMovimientosPosibles(
+            mano = hand,
+            fichasTablero = board,
+            tieneComodin = false
+        )
+
+        assertFalse(hasMoves)
+    }
 }
