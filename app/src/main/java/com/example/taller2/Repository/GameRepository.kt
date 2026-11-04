@@ -3,8 +3,11 @@ package com.example.taller2.Repository
 
 import com.example.taller2.Model.Ficha
 import com.example.taller2.Model.Poder
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ServerValue
+import com.google.firebase.database.ValueEventListener
 
 class GameRepository {
 
@@ -264,6 +267,34 @@ class GameRepository {
                         ?: "Error al preparar la partida."
                 )
             }
+    }
+
+    // Escuchar actualizaciones de la sala en tiempo real
+    fun listenToRoom(
+        roomCode: String,
+        onUpdate: (DataSnapshot) -> Unit,
+        onError: (String) -> Unit
+    ): ValueEventListener {
+        val roomReference = roomsReference.child(roomCode.trim())
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                onUpdate(snapshot)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                onError(error.message)
+            }
+        }
+        roomReference.addValueEventListener(listener)
+        return listener
+    }
+
+    // Remover listener en tiempo real
+    fun removeRoomListener(
+        roomCode: String,
+        listener: ValueEventListener
+    ) {
+        roomsReference.child(roomCode.trim()).removeEventListener(listener)
     }
 }
 

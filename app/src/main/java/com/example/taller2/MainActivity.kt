@@ -162,18 +162,21 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         ) { backStackEntry ->
-
-                            val roomCode =
-                                backStackEntry.arguments?.getString("roomCode") ?: ""
+                            val roomCode = backStackEntry.arguments?.getString("roomCode") ?: ""
+                            val userId = authViewModel.getCurrentUserId() ?: ""
 
                             RoomScreen(
                                 roomCode = roomCode,
+                                userId = userId,
                                 onBack = {
                                     navController.navigate("lobby") {
                                         popUpTo("lobby") {
                                             inclusive = false
                                         }
                                     }
+                                },
+                                onStartGame = { code ->
+                                    navController.navigate("game/$code")
                                 }
                             )
                         }
