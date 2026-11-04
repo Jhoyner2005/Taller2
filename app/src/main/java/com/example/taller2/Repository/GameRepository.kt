@@ -247,7 +247,7 @@ class GameRepository {
                 val well = deck.drop(14)
 
                 // Configurar los poderes iniciales
-                val powerUses = Poder.values().associate {
+                val powerUses = Poder.entries.associate {
                     it.name to it.limiteUsosInicial
                 }
 
@@ -491,11 +491,8 @@ class GameRepository {
                 playerTiles.add(Ficha(a, b))
             }
 
-            val pendingPower = snapshot.child("pendingPower").getValue(String::class.java) ?: ""
-            val tieneComodin = pendingPower == Poder.COMODIN.name
-
             // Regla: El jugador que puede colocar al menos una de sus fichas NO puede pasar ni robar del pozo.
-            if (Gamerulesvalidator.tieneMovimientosPosibles(playerTiles, boardTilesList, tieneComodin)) {
+            if (Gamerulesvalidator.tieneMovimientosPosibles(playerTiles, boardTilesList, false)) {
                 onError("Tienes fichas jugables en tu mano, no puedes pasar ni robar.")
                 return@addOnSuccessListener
             }
@@ -534,7 +531,7 @@ class GameRepository {
         }
     }
 
-    // Usar un poder especial
+    // Usar un poder especial: Cambiar una ficha aleatoria de la mano
     fun usePower(
         roomCode: String,
         userId: String,
@@ -558,33 +555,80 @@ class GameRepository {
                 return@addOnSuccessListener
             }
 
+            val playerTiles = mutableListOf<Ficha>()
+            playerSnap.child("tiles").children.forEach { tileSnap ->
+                val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                playerTiles.add(Ficha(a, b))
+            }
+
+            if (playerTiles.isEmpty()) {
+                onError("No tienes fichas en tu mano para cambiar.")
+                return@addOnSuccessListener
+            }
+
+            val wellTiles = mutableListOf<Ficha>()
+            snapshot.child("well").children.forEach { tileSnap ->
+                val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                wellTiles.add(Ficha(a, b))
+            }
+
+            fun convertTiles(tiles: List<Ficha>): List<Map<String, Int>> {
+                return tiles.map { mapOf("ladoA" to it.ladoA, "ladoB" to it.ladoB) }
+            }
+
             val updates = mutableMapOf<String, Any>()
             updates["players/$userId/powerUses/${power.name}"] = currentUses - 1
 
             val currentPowersUsed = playerSnap.child("powersUsed").getValue(Int::class.java) ?: 0
             updates["players/$userId/powersUsed"] = currentPowersUsed + 1
 
-            when (power) {
-                Poder.SALTO -> {
-                    val currentTurnIndex = snapshot.child("currentTurnIndex").getValue(Int::class.java) ?: 0
-                    val playersCount = snapshot.child("players").childrenCount.toInt()
-                    val nextTurnIndex = if (playersCount > 0) (currentTurnIndex + 2) % playersCount else 0
-                    updates["currentTurnIndex"] = nextTurnIndex
-                }
-                Poder.INVERSION -> {
-                    val directionReversed = snapshot.child("directionReversed").getValue(Boolean::class.java) ?: false
-                    updates["directionReversed"] = !directionReversed
-                }
-                Poder.COMODIN -> {
-                    updates["pendingPower"] = Poder.COMODIN.name
-                }
-                Poder.INTERCAMBIO -> {
-                    updates["pendingPower"] = Poder.INTERCAMBIO.name
+            val randomHandIndex = playerTiles.indices.random()
+            val tileToSwap = playerTiles[randomHandIndex]
+
+            if (wellTiles.isNotEmpty()) {
+                val randomWellIndex = wellTiles.indices.random()
+                val newTileFromWell = wellTiles.removeAt(randomWellIndex)
+
+                playerTiles[randomHandIndex] = newTileFromWell
+                wellTiles.add(tileToSwap)
+
+                updates["players/$userId/tiles"] = convertTiles(playerTiles)
+                updates["well"] = convertTiles(wellTiles)
+            } else {
+                val opponentSnap = snapshot.child("players").children.firstOrNull { it.key != userId }
+                val opponentId = opponentSnap?.key
+
+                if (opponentSnap != null && opponentId != null) {
+                    val opponentTiles = mutableListOf<Ficha>()
+                    opponentSnap.child("tiles").children.forEach { tileSnap ->
+                        val a = tileSnap.child("ladoA").getValue(Int::class.java) ?: 0
+                        val b = tileSnap.child("ladoB").getValue(Int::class.java) ?: 0
+                        opponentTiles.add(Ficha(a, b))
+                    }
+
+                    if (opponentTiles.isNotEmpty()) {
+                        val randomOpponentIndex = opponentTiles.indices.random()
+                        val newTileFromOpponent = opponentTiles[randomOpponentIndex]
+
+                        playerTiles[randomHandIndex] = newTileFromOpponent
+                        opponentTiles[randomOpponentIndex] = tileToSwap
+
+                        updates["players/$userId/tiles"] = convertTiles(playerTiles)
+                        updates["players/$opponentId/tiles"] = convertTiles(opponentTiles)
+                    } else {
+                        onError("No hay fichas disponibles para realizar el cambio.")
+                        return@addOnSuccessListener
+                    }
+                } else {
+                    onError("No hay fichas en el pozo para realizar el cambio.")
+                    return@addOnSuccessListener
                 }
             }
 
             roomReference.updateChildren(updates).addOnCompleteListener { task ->
-                if (task.isSuccessful) onSuccess() else onError(task.exception?.localizedMessage ?: "Error al usar poder.")
+                if (task.isSuccessful) onSuccess() else onError(task.exception?.localizedMessage ?: "Error al usar el poder.")
             }
         }.addOnFailureListener { error ->
             onError(error.localizedMessage ?: "Error al conectar con la base de datos.")

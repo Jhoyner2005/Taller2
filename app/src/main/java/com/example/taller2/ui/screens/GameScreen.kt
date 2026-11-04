@@ -349,7 +349,6 @@ fun GameScreen(
     var winnerId by remember { mutableStateOf("") }
     var winnerName by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var isComodinActive by remember { mutableStateOf(false) }
 
     DisposableEffect(roomCode) {
         val listener = repository.listenToRoom(
@@ -470,10 +469,8 @@ fun GameScreen(
                 userId = userId,
                 tile = tile,
                 playOnLeft = porIzquierda,
-                isComodin = isComodinActive,
-                onSuccess = {
-                    isComodinActive = false
-                },
+                isComodin = false,
+                onSuccess = { },
                 onError = { err ->
                     errorMessage = err
                 }
@@ -490,9 +487,6 @@ fun GameScreen(
             )
         },
         onPowerSelected = { power ->
-            if (power == Poder.COMODIN) {
-                isComodinActive = true
-            }
             repository.usePower(
                 roomCode = roomCode,
                 userId = userId,

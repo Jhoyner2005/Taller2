@@ -64,15 +64,12 @@ fun PowersBarPreview() {
     val samplePlayer = Jugador(
         nombre = "Player 1",
         usosPoderes = mapOf(
-            Poder.COMODIN.name to 1,
-            Poder.SALTO.name to 0,
-            Poder.INTERCAMBIO.name to 1,
-            Poder.INVERSION.name to 1,
+            Poder.CAMBIAR_FICHA.name to 1,
         ),
     )
     PowersBarComponent(
         player = samplePlayer,
-        selectedPower = Poder.COMODIN,
+        selectedPower = Poder.CAMBIAR_FICHA,
         onPowerSelected = {},
     )
 }

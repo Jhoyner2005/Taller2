@@ -9,10 +9,7 @@ data class Jugador(
     val fichas: List<Ficha> = emptyList(),
     val puntaje: Int = 0,
     val usosPoderes: Map<String, Int> = mapOf(
-        Poder.COMODIN.name to 1,
-        Poder.SALTO.name to 1,
-        Poder.INTERCAMBIO.name to 1,
-        Poder.INVERSION.name to 1,
+        Poder.CAMBIAR_FICHA.name to 1,
     ),
     val poderesUsados: Int = 0,
     val esHost: Boolean = false,
